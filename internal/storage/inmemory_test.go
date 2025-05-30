@@ -1,10 +1,12 @@
 package storage
 
 import (
+	"errors"
 	"reflect"
 	"sync"
 	"testing"
 
+	"github.com/zhenyanesterkova/citatnik/internal/app/apperrors"
 	"github.com/zhenyanesterkova/citatnik/internal/app/generator"
 	"github.com/zhenyanesterkova/citatnik/internal/app/quote"
 )
@@ -80,4 +82,109 @@ func TestInMemory_Add(t *testing.T) {
 		}
 	})
 
+}
+
+func TestInMemory_GetAll(t *testing.T) {
+	quote1 := &quote.Quote{
+		Author: "test",
+		Text:   "Test Text",
+	}
+
+	want := []*quote.Quote{}
+	want = append(want, quote1)
+
+	m := New()
+	_ = m.Add(quote1)
+
+	t.Run("success", func(t *testing.T) {
+		if got := m.GetAll(); !reflect.DeepEqual(got, want) {
+			t.Errorf("InMemory.GetAll() = %v, want %v", got, want)
+		}
+	})
+}
+
+func TestInMemory_GetRandom(t *testing.T) {
+	quote1 := &quote.Quote{
+		Author: "test",
+		Text:   "Test Text",
+	}
+
+	m := New()
+
+	t.Run("nil", func(t *testing.T) {
+		if got := m.GetRandom(); got != nil {
+			t.Errorf("InMemory.GetRandom() = %v, want %v", got, nil)
+		}
+	})
+
+	_ = m.Add(quote1)
+
+	t.Run("success", func(t *testing.T) {
+		if got := m.GetRandom(); !reflect.DeepEqual(got, quote1) {
+			t.Errorf("InMemory.GetRandom() = %v, want %v", got, quote1)
+		}
+	})
+}
+
+func TestInMemory_GetByAuthor(t *testing.T) {
+	quote1 := &quote.Quote{
+		Author: "test",
+		Text:   "Test Text",
+	}
+
+	want := make(map[string][]*quote.Quote)
+	want["test"] = append(want["test"], quote1)
+
+	m := New()
+	_ = m.Add(quote1)
+
+	t.Run("success", func(t *testing.T) {
+		if got := m.GetByAuthor("test"); !reflect.DeepEqual(got[0], quote1) {
+			t.Errorf("InMemory.GetByAuthor() = %v, want %v", got[0], quote1)
+		}
+	})
+}
+
+func TestInMemory_Delete(t *testing.T) {
+	quote1 := &quote.Quote{
+		Author: "test",
+		Text:   "Test Text",
+	}
+
+	m := New()
+	_ = m.Add(quote1)
+
+	t.Run("not found", func(t *testing.T) {
+		err := m.Delete(3)
+		if err == nil || !errors.Is(err, apperrors.ErrDeleteNotFound) {
+			t.Errorf("InMemory.Delete() error = %v, wantErr %v", err, apperrors.ErrDeleteNotFound)
+		}
+	})
+
+	t.Run("success", func(t *testing.T) {
+		err := m.Delete(1)
+		if err != nil {
+			t.Errorf("InMemory.Delete() error = %v, wantErr %v", err, nil)
+		}
+		w := make(map[string][]*quote.Quote)
+		w["test"] = []*quote.Quote{}
+		if !reflect.DeepEqual(m.authorIndex, w) {
+			t.Errorf("InMemory.authorIndex = %v, want %v", m.authorIndex, make(map[string][]*quote.Quote))
+		}
+		if !reflect.DeepEqual(m.quotes, []*quote.Quote{}) {
+			t.Errorf("InMemory.quotes = %v, want %v", m.quotes, []*quote.Quote{})
+		}
+		if !reflect.DeepEqual(m.idIndex, make(map[uint64]*quote.Quote)) {
+			t.Errorf("InMemory.idIndex = %v, want %v", m.idIndex, make(map[uint64]*quote.Quote))
+		}
+	})
+
+}
+
+func TestInMemory_Ping(t *testing.T) {
+	m := New()
+	err := m.Ping()
+	if err != nil {
+		t.Errorf("InMemory.Ping = %v, want %v", err, nil)
+	}
 }

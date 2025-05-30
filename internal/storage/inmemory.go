@@ -110,3 +110,7 @@ func (m *InMemory) Delete(id uint64) error {
 
 	return nil
 }
+
+func (m *InMemory) Ping() error {
+	return nil
+}

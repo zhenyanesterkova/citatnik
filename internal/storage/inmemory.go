@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/zhenyanesterkova/citatnik/internal/app/apperrors"
 	"github.com/zhenyanesterkova/citatnik/internal/app/generator"
 	"github.com/zhenyanesterkova/citatnik/internal/app/quote"
 )
@@ -89,21 +90,21 @@ func (m *InMemory) Delete(id uint64) error {
 
 	quote, ok := m.idIndex[id]
 	if !ok {
-		return fmt.Errorf("failed delete quote with ID %d: not found", id)
+		return fmt.Errorf("failed delete quote with ID %d: %w", id, apperrors.ErrDeleteNotFound)
 	}
 
 	delete(m.idIndex, id)
 
 	for idx, quote := range m.authorIndex[quote.Author] {
 		if quote.ID == id {
-			m.authorIndex[quote.Author] = slices.Delete(m.authorIndex[quote.Author], idx, idx)
+			m.authorIndex[quote.Author] = slices.Delete(m.authorIndex[quote.Author], idx, idx+1)
 			break
 		}
 	}
 
 	for idx, quote := range m.quotes {
 		if quote.ID == id {
-			m.quotes = slices.Delete(m.quotes, idx, idx)
+			m.quotes = slices.Delete(m.quotes, idx, idx+1)
 			break
 		}
 	}

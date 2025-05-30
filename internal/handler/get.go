@@ -20,8 +20,6 @@ func (rh *RepositorieHandler) Ping(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, TextServerError, http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (rh *RepositorieHandler) Get(w http.ResponseWriter, r *http.Request) {

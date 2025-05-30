@@ -33,4 +33,5 @@ func (rh *RepositorieHandler) InitRouter(router *mux.Router) {
 	router.HandleFunc("/quotes", rh.Get).Methods(http.MethodGet)
 	router.HandleFunc("/quotes/random", rh.GetRandom).Methods(http.MethodGet)
 	router.HandleFunc("/quotes", rh.Add).Methods(http.MethodPost)
+	router.HandleFunc("/quotes/{id}", rh.Delete).Methods(http.MethodDelete)
 }

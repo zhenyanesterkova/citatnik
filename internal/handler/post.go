@@ -20,7 +20,7 @@ func (rh *RepositorieHandler) Add(w http.ResponseWriter, r *http.Request) {
 
 	err := rh.repo.Add(&quoteToAdd)
 	if err != nil {
-		log.Printf("error add quote memory: %v", err)
+		log.Printf("error add quote with ID %d to memory: %v", quoteToAdd.ID, err)
 		http.Error(w, TextServerError, http.StatusInternalServerError)
 		return
 	}

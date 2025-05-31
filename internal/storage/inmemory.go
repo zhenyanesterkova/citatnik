@@ -18,14 +18,11 @@ type Generator interface {
 }
 
 type InMemory struct {
-	quotes []*quote.Quote
-
+	generator   Generator
 	idIndex     map[uint64]*quote.Quote
 	authorIndex map[string][]*quote.Quote
-
-	generator Generator
-
-	mu sync.RWMutex
+	quotes      []*quote.Quote
+	mu          sync.RWMutex
 }
 
 func New() *InMemory {
